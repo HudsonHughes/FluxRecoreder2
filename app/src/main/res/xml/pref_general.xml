@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="on_off"
+        android:summaryOff="@string/toggle_off"
+        android:summaryOn="@string/toggle_on"
+        android:title="@string/switchLabel"/>
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="reboot"
+        android:summary="If recording is activated it will continue after the device reboots"
+        android:title="Restart after reboot"/>
+
+    <ListPreference
+        android:defaultValue="120"
+        android:entries="@array/buffer_durations_alias"
+        android:entryValues="@array/buffer_durations_actual"
+        android:key="seconds_desired"
+        android:title="@string/minutes_desired_label"/>
+
+    <Preference
+        android:key="clear_buffer_button"
+        android:title="Clear recording buffer"
+        android:summary=""/>
+
+    <Preference
+        android:key="notification"
+        android:title="Want to remove the notification?"
+        android:summary=""/>
+
+
+</PreferenceScreen>
