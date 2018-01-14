@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="on_off"
+        android:summaryOff="@string/toggle_off"
+        android:summaryOn="@string/toggle_on"
+        android:title="@string/switchLabel"/>
+
+    <com.example.vgdcuser.myapplication.CustomListPreference
+        android:defaultValue="2"
+        android:entries="@array/buffer_durations_alias"
+        android:entryValues="@array/buffer_durations_actual"
+        android:key="seconds_desired"
+        android:title="@string/minutes_desired_label"/>
+
+
+
+</PreferenceScreen>
