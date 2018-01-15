@@ -1,0 +1,151 @@
+package com.fluxrecorder.hudsonhughes.fluxrecorder
+
+import android.app.NotificationManager
+import android.app.Service
+import android.content.Context
+import android.content.Intent
+import android.media.AudioFormat
+import android.media.AudioRecord
+import android.os.IBinder
+import android.util.Log
+import org.greenrobot.eventbus.EventBus
+import android.media.MediaRecorder
+import android.R.attr.process
+import android.app.Notification
+import android.media.MediaRecorder.AudioSource
+import android.app.PendingIntent
+import android.os.Handler
+import android.support.v4.app.NotificationCompat
+import android.app.NotificationChannel
+import android.graphics.Color
+import android.os.Build
+import android.support.annotation.RequiresApi
+import org.jetbrains.anko.defaultSharedPreferences
+
+
+class RecordingService : Service() {
+
+    override fun onBind(intent: Intent): IBinder {
+        TODO("Return the communication channel to the service.")
+    }
+
+    lateinit var audioIn : AudioIn
+    lateinit var mNotificationManager : NotificationManager
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onCreate() {
+        super.onCreate()
+        Log.d("Hudson", "service onCreate")
+//        EventBus.getDefault().register(this);
+        val notificationIntent = Intent(this, CentralActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
+        mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val id = "ShadowRecorder"
+        // The user-visible name of the channel.
+        val name = "Shadow Recorder"
+        // The user-visible description of the channel.
+        val description = "Shadow Recorder"
+        val importance = NotificationManager.IMPORTANCE_LOW
+        val mChannel = NotificationChannel(id, name, importance)
+        // Configure the notification channel.
+        mChannel.description = description
+        mChannel.enableVibration(false)
+        mNotificationManager.createNotificationChannel(mChannel)
+        val notification = NotificationCompat.Builder(this, "ShadowRecorder")
+                .setContentTitle("New Messages")
+                .setContentText("You've received 3 new messages.")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentIntent(pendingIntent)
+                .build()
+        startForeground(414, notification)
+        defaultSharedPreferences.edit().putBoolean("on_off", true).commit()
+        App.recorderRunning = true
+        audioIn = AudioIn(this, pendingIntent, { stopSelf() })
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("Hudson", "service onDestroy")
+//        EventBus.getDefault().unregister(this);
+        App.recorderRunning = false
+        audioIn.close()
+        stopForeground(Service.STOP_FOREGROUND_REMOVE)
+        defaultSharedPreferences.edit().putBoolean("on_off", false).commit()
+    }
+
+    class AudioIn(ctx : Context, pendingIntent: PendingIntent, callback: () -> Unit) : Thread() {
+        var stopped = false
+        lateinit var ctx : Context;
+        lateinit var callback : () -> Unit;
+        lateinit var pendingIntent : PendingIntent
+        init {
+            this.ctx = ctx
+            this.callback = callback
+            this.pendingIntent = pendingIntent
+            start()
+        }
+
+        override fun run() {
+            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO)
+            var recorder: AudioRecord? = null
+            val buffers = Array(256) { ByteArray(160) }
+            var ix = 0
+            val mNotificationManager = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            try { // ... initialise
+
+                var N = AudioRecord.getMinBufferSize(44100, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
+                recorder = AudioRecord(AudioSource.MIC,
+                        44100,
+                        AudioFormat.CHANNEL_IN_MONO,
+                        AudioFormat.ENCODING_PCM_16BIT,
+                        N * 10)
+                recorder.startRecording()
+
+                while (!stopped) {
+                    val buffer = buffers[ix++ % buffers.size]
+                    N = recorder.read(buffer, 0, buffer.size)
+                    if(N < 1) {
+                        Log.d("Hudson", "Error message after trying read(): $N")
+                        val notification = NotificationCompat.Builder(ctx, "ShadowRecorder")
+                                .setContentTitle("Error")
+                                .setContentText("You've received 3 new messages.")
+                                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                                .setContentIntent(pendingIntent)
+                                .build()
+                        mNotificationManager.notify(415, notification)
+                        break
+                    } else {
+                        if (buffer.size != N)
+                            Log.d("Hudson", "Result from read(): $N")
+                        App.instance.writeBuffer(buffer)
+                    }
+                    //process is what you will do with the data...not defined here
+                }
+            }catch (x : FileSystemException) {
+                val notification = NotificationCompat.Builder(ctx, "ShadowRecorder")
+                        .setContentTitle("Out of Space")
+                        .setContentText("You've received 3 new messages.")
+                        .setSmallIcon(R.drawable.ic_launcher_foreground)
+                        .setContentIntent(pendingIntent)
+                        .build()
+                mNotificationManager.notify(415, notification)
+            } catch (x: Throwable) {
+                Log.w("Hudson", "Error reading voice audio", x)
+            } finally {
+                    if(recorder != null) {
+                        recorder.stop()
+                        recorder.release()
+                    }
+
+                close()
+                callback()
+            }
+        }
+
+        fun close() {
+            stopped = true
+
+        }
+
+    }
+}
