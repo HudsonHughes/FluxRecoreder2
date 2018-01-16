@@ -138,14 +138,18 @@ class MainFragment : Fragment() {
 
     private fun updateUI(){
         if(isAdded){
+            var instruction_string = getString(R.string.instruction_off)
             if (App.isServiceRunning()) {
+                instruction_string = getString(R.string.instruction_on)
                 rootView.recordingTextView.text = "Recording now" + (".".repeat(dots))
                 if (++dots > 3) dots = 0
                 rootView.recordingTextView.visibility = View.VISIBLE
+                rootView.instructions.text = getString(R.string.instruction_on)
             } else {
                 rootView.recordingTextView.text = ""
                 rootView.recordingTextView.visibility = View.GONE
             }
+            rootView.instructions.text = instruction_string
             if (!App.instance.canHandleBufferDuration(App.secondsDesired.toInt())) {
                 rootView.errorTextView.text = "There is not enough space for the buffer to occupy."
                 //.format(App.instance.requiredSpace(App.secondsDesired)/1024))
@@ -201,8 +205,8 @@ class MainFragment : Fragment() {
 						":" + String.format("%02d", minute) +
 						":" + String.format("%02d", seconds));	*/
                         var requested_time : Int = hourOfDay * 60 * 60 + minute * 60 + seconds * 60
-                        if(requested_time > App.bufferDuration){
-                            alert(message = "The time specified is larger than the buffer", title = "Save entire buffer?"){
+                        if(requested_time > (if (App.bufferDuration > App.secondsDesired)  App.secondsDesired else App.bufferDuration)){
+                            alert(message = "The time specified is larger than the buffer.", title = "Save entire buffer?"){
                                 positiveButton("Yes"){ saveAudio(requested_time) }
                                 negativeButton("Cancel"){}
                             }.show()
@@ -211,6 +215,7 @@ class MainFragment : Fragment() {
                         }
                     }
                 }, 0, 1, 0, true)
+                mTimePicker.setTitle("How much do you want?")
                 mTimePicker.show()
             }
         }

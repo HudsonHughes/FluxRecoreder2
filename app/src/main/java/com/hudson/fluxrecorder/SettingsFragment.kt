@@ -1,5 +1,6 @@
 package com.hudson.fluxrecorder
 
+import android.content.ComponentName
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
@@ -7,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.preference.Preference
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.support.v7.preference.CheckBoxPreference
 import android.support.v7.preference.ListPreference
 import android.util.Log
@@ -101,6 +103,21 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         if(key == "on_off"){
             val activation_switch = findPreference("on_off") as CheckBoxPreference
             activation_switch.isChecked = sharedPreferences.getBoolean("on_off", false)
+            sharedPreferences.edit().putBoolean("suppose", sharedPreferences.getBoolean("on_off", false)).commit()
+        }
+        if(key == "reboot"){
+            val reboot = findPreference("reboot")
+            val receiver : ComponentName = ComponentName(context, OnBootComplete::class.java)
+            val pm : PackageManager = context!!.packageManager
+            if(sharedPreferences.getBoolean("reboot", false)){
+                pm.setComponentEnabledSetting(receiver,
+                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.DONT_KILL_APP);
+            }else{
+                pm.setComponentEnabledSetting(receiver,
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP);
+            }
         }
     }
     companion object {

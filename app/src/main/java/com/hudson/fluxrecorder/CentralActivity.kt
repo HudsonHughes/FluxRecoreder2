@@ -23,7 +23,7 @@ class CentralActivity : AppCompatActivity() {
 
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {
-            R.id.navigation_home -> {
+            R.id.navigation_playback -> {
                 changeFragment(PlaylistFragment.newInstance())
                 return@OnNavigationItemSelectedListener true
             }
@@ -31,7 +31,7 @@ class CentralActivity : AppCompatActivity() {
                 changeFragment(MainFragment.newInstance())
                 return@OnNavigationItemSelectedListener true
             }
-            R.id.navigation_notifications -> {
+            R.id.navigation_settings -> {
                 changeFragment(SettingsFragment.newInstance())
                 return@OnNavigationItemSelectedListener true
 
@@ -50,7 +50,7 @@ class CentralActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_central)
         PermissionsManager.getInstance().requestPermissionsIfNecessaryForResult(this,
-                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO), object : PermissionsResultAction() {
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO, Manifest.permission.RECEIVE_BOOT_COMPLETED), object : PermissionsResultAction() {
 
             override fun onGranted() {
                 navigation.selectedItemId = R.id.navigation_dashboard
