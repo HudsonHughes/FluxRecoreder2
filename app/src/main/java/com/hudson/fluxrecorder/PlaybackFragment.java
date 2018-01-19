@@ -200,7 +200,7 @@ public class PlaybackFragment extends DialogFragment{
         mMediaPlayer = new MediaPlayer();
 
         try {
-            mMediaPlayer.setDataSource(item.getFile().getPath());
+            mMediaPlayer.setDataSource("file://" + item.getFile().getPath());
             mMediaPlayer.prepare();
             mSeekBar.setMax(mMediaPlayer.getDuration());
 
@@ -211,6 +211,7 @@ public class PlaybackFragment extends DialogFragment{
                 }
             });
         } catch (IOException e) {
+
             Log.e(LOG_TAG, "prepare() failed");
         }
 
@@ -233,7 +234,7 @@ public class PlaybackFragment extends DialogFragment{
         mMediaPlayer = new MediaPlayer();
 
         try {
-            mMediaPlayer.setDataSource(item.getFile().getPath());
+            mMediaPlayer.setDataSource("file://" + item.getFile().getPath());
             mMediaPlayer.prepare();
             mSeekBar.setMax(mMediaPlayer.getDuration());
             mMediaPlayer.seekTo(progress);
@@ -246,6 +247,7 @@ public class PlaybackFragment extends DialogFragment{
             });
 
         } catch (IOException e) {
+            e.printStackTrace();
             Log.e(LOG_TAG, "prepare() failed");
         }
 
@@ -256,12 +258,14 @@ public class PlaybackFragment extends DialogFragment{
     private void pausePlaying() {
         mPlayButton.setImageResource(android.R.drawable.ic_media_play);
         mHandler.removeCallbacks(mRunnable);
+        if(mMediaPlayer != null)
         mMediaPlayer.pause();
     }
 
     private void resumePlaying() {
         mPlayButton.setImageResource(android.R.drawable.ic_media_pause);
         mHandler.removeCallbacks(mRunnable);
+        if(mMediaPlayer != null)
         mMediaPlayer.start();
         updateSeekBar();
     }
@@ -269,9 +273,11 @@ public class PlaybackFragment extends DialogFragment{
     private void stopPlaying() {
         mPlayButton.setImageResource(android.R.drawable.ic_media_play);
         mHandler.removeCallbacks(mRunnable);
-        mMediaPlayer.stop();
-        mMediaPlayer.reset();
-        mMediaPlayer.release();
+        if(mMediaPlayer != null) {
+            mMediaPlayer.stop();
+            mMediaPlayer.reset();
+            mMediaPlayer.release();
+        }
         mMediaPlayer = null;
 
         mSeekBar.setProgress(mSeekBar.getMax());

@@ -7,6 +7,7 @@ import android.content.Intent
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.os.Build
 import android.os.Environment
 import android.util.Log
 import org.jetbrains.anko.defaultSharedPreferences
@@ -189,14 +190,20 @@ class App : Application() {
             return false
         }
         fun startService() : Boolean {
-            if(testMicrophone())
-                instance.startService(Intent(instance, RecordingService::class.java))
-            else
+            if(testMicrophone()) {
+                if (Build.VERSION.SDK_INT >= 26) {
+                    instance.startForegroundService(Intent(instance, RecordingService::class.java))
+                }else{
+                    instance.startService(Intent(instance, RecordingService::class.java))
+                }
+            }else
                 return false
             return isServiceRunning()
         }
         fun stopService() : Boolean {
             instance.stopService(Intent(instance, RecordingService::class.java))
+
+
             return isServiceRunning()
         }
         fun toggleService() : Boolean {

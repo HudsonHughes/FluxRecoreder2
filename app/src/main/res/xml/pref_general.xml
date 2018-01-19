@@ -34,5 +34,15 @@
         android:title="Want to remove the notification?"
         android:summary=""/>
 
+    <Preference
+        android:key="shareApp"
+        android:title="Share this app with your friends"
+        android:summary=""/>
+
+    <Preference
+        android:key="rateOnPlay"
+        android:title="Rate us on Google Play"
+        android:summary=""/>
+
 
 </PreferenceScreen>

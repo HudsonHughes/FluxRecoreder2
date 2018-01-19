@@ -15,8 +15,7 @@ import com.anthonycr.grant.PermissionsManager
 import org.jetbrains.anko.alert
 import org.jetbrains.anko.yesButton
 import android.support.annotation.NonNull
-
-
+import android.view.Window
 
 
 class CentralActivity : AppCompatActivity() {
@@ -48,6 +47,7 @@ class CentralActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+//        requestWindowFeature(Window.FEATURE_NO_TITLE)
         setContentView(R.layout.activity_central)
         PermissionsManager.getInstance().requestPermissionsIfNecessaryForResult(this,
                 arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO, Manifest.permission.RECEIVE_BOOT_COMPLETED), object : PermissionsResultAction() {

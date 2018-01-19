@@ -37,8 +37,9 @@ class MyItemRecyclerViewAdapter(private val activity : AppCompatActivity, privat
         with(holder){
             item_name.text = mValues[position].file.nameWithoutExtension
             item_date.text = SimpleDateFormat("MM-dd-yyyy    HH:mm").format(Date(mValues[position].file.lastModified()))
-            val uri = Uri.parse(mValues[position].file.absolutePath)
+            val uri = Uri.fromFile(mValues[position].file)
             val mmr = MediaMetadataRetriever()
+
             Log.d("Hudson", uri.toString())
             mmr.setDataSource(activity, uri)
             val durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)

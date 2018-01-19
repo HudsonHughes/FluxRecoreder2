@@ -70,7 +70,9 @@ class RecordingService : Service() {
         Log.d("Hudson", "service onDestroy")
         App.recorderRunning = false
         audioIn.close()
-        stopForeground(Service.STOP_FOREGROUND_REMOVE)
+
+        if(Build.VERSION.SDK_INT >= 24)
+            stopForeground(Service.STOP_FOREGROUND_REMOVE)
         defaultSharedPreferences.edit().putBoolean("on_off", false).commit()
     }
 

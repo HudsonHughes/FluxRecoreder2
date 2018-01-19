@@ -84,6 +84,16 @@ class PlaylistFragment : Fragment() {
     }
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessageEvent(event: RefreshRecyclerView) {
+        val ls = getMusic()
+        view2.list.adapter = MyItemRecyclerViewAdapter(context as AppCompatActivity, ls)
+        if (ls.isEmpty()){
+            view2.list.setVisibility(View.GONE);
+            view2.empty_view.setVisibility(View.VISIBLE);
+        } else {
+            view2.list.setVisibility(View.VISIBLE);
+            view2.empty_view.setVisibility(View.GONE);
+        }
+        view2.swiperefresh.isRefreshing = false
     };
     override fun onStart() {
         super.onStart()

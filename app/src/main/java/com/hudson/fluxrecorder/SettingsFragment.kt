@@ -40,12 +40,19 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         setPreferencesFromResource(R.xml.pref_general, rootKey)
         val activation_switch = findPreference("on_off")
         val buffer_size_list = findPreference("seconds_desired")
-        activation_switch.setOnPreferenceChangeListener { preference, newValue ->
-            if (newValue as Boolean)
-                App.startService()
-            else
+        activation_switch.onPreferenceChangeListener = android.support.v7.preference.Preference.OnPreferenceChangeListener{
+            preference, newValue ->
+            if (newValue as Boolean) {
+                if (App.startService())
+                    true
+                else {
+                    Log.d("Hudson", "Unable to start service startService failed.")
+                    false
+                }
+            }else{
                 App.stopService()
-            true
+                true
+            }
         }
         (activation_switch as CheckBoxPreference).isChecked = App.isServiceRunning()
         buffer_size_list.setOnPreferenceChangeListener { preference, newValue ->
@@ -88,6 +95,18 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
             }.show()
             false
         }
+
+        val shareOnPlay = findPreference("shareApp")
+        shareOnPlay.setOnPreferenceClickListener {
+
+            false
+        }
+
+        val rateOnPlay = findPreference("rateOnPlay")
+        rateOnPlay.setOnPreferenceClickListener {
+
+            false
+        }
     }
     override fun onResume() {
         super.onResume()
@@ -118,6 +137,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
                     PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                     PackageManager.DONT_KILL_APP);
             }
+            Log.d("Hudson", "Rebooting " + sharedPreferences.getBoolean("reboot", false))
         }
     }
     companion object {

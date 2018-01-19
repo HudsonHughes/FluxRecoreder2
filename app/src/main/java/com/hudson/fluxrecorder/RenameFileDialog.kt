@@ -51,10 +51,11 @@ class RenameFileDialog : DialogFragment() {
                         MediaScannerConnection.scanFile(activity, arrayOf(f.path, to.path), null,
                             MediaScannerConnection.OnScanCompletedListener { path, uri ->
                                 Log.d("Hudson", "scanned ${path}")
-                                EventBus.getDefault().post(PlaylistFragment.RefreshRecyclerView());
+                                EventBus.getDefault().post(PlaylistFragment.RefreshRecyclerView())
 
                             })
                         activity.runOnUiThread {
+                            EventBus.getDefault().post(PlaylistFragment.RefreshRecyclerView())
                             activity.toast("Successful rename")
                         }
                     } else {
