@@ -2,6 +2,8 @@ package com.hudson.fluxrecorder
 
 import android.app.ActivityManager
 import android.app.Application
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.media.AudioFormat
@@ -9,6 +11,7 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.Environment
+import android.support.v4.app.NotificationCompat
 import android.util.Log
 import org.jetbrains.anko.defaultSharedPreferences
 import java.io.*
@@ -190,20 +193,31 @@ class App : Application() {
             return false
         }
         fun startService() : Boolean {
-            if(testMicrophone()) {
+            var mic = testMicrophone()
+            if(mic) {
                 if (Build.VERSION.SDK_INT >= 26) {
                     instance.startForegroundService(Intent(instance, RecordingService::class.java))
                 }else{
                     instance.startService(Intent(instance, RecordingService::class.java))
                 }
-            }else
+            }else{
+                val mNotificationManager = instance.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                val notificationIntent = Intent(instance, CentralActivity::class.java)
+                val pendingIntent = PendingIntent.getActivity(instance, 0, notificationIntent, 0)
+                val notification = NotificationCompat.Builder(instance, "ShadowRecorder")
+                        .setContentTitle("Recording Interrupted")
+                        .setContentText("Unable to acquire control of the microphone.")
+                        .setSmallIcon(R.drawable.ic_stat_error)
+                        .setContentIntent(pendingIntent)
+                        .build()
+                mNotificationManager.notify(415, notification)
                 return false
+            }
+
             return isServiceRunning()
         }
         fun stopService() : Boolean {
             instance.stopService(Intent(instance, RecordingService::class.java))
-
-
             return isServiceRunning()
         }
         fun toggleService() : Boolean {

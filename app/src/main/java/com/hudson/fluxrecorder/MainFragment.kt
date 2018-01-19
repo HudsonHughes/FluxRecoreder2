@@ -29,6 +29,7 @@ import org.jetbrains.anko.sdk25.coroutines.onClick
 import org.jetbrains.anko.support.v4.act
 import com.ikovac.timepickerwithseconds.MyTimePickerDialog
 import com.ikovac.timepickerwithseconds.TimePicker
+import org.jetbrains.anko.support.v4.longToast
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -61,77 +62,82 @@ class MainFragment : Fragment() {
         }
 
     }
-    fun saveAudio(requestedSeconds : Int) : Future<Unit> {
+    fun saveAudio(requestedSeconds : Int) {
         var dialog = progressDialog(message = "Please wait a bit…", title = "Saving wav file")
         var cancel = false
-        var target = File(App.storagePath).resolve(getCurrentLocalDateTimeStamp() + ".wav")
-        var task = doAsync( {throwable : Throwable -> target.delete(); dialog.dismiss(); alert("Failed to save file.")} ) {
-            uiThread { dialog.show() }
-            var headerArray = ByteArray(44)
-            target.appendBytes(headerArray)
-            val requestedBytes = App.bytesPerSecond * requestedSeconds
-            var leftToProcess = requestedBytes.toLong()
-            var processed = 0L
-            val newestToOldest = App.instance.folder.listFiles().sortedByDescending { file -> file.name }
-            var mapPointers: MutableMap<File, Long> = mutableMapOf<File, Long>()
-            for (f: File in newestToOldest) {
-                if (cancel) return@doAsync
-                if (leftToProcess - f.length() > -1) {
-                    mapPointers.put(f, 0L)
-                    leftToProcess -= f.length()
-                    processed += f.length()
-                    Log.d("Hudson", "Processed ${f.name} ${0L}")
-                } else {
-                    mapPointers.put(f, f.length() - leftToProcess)
-                    processed += f.length() - leftToProcess
-                    Log.d("Hudson", "Processed ${f.name} ${f.length() + (leftToProcess - f.length())}")
-                    break
+        if(!App.instance.canHandleWavFileDuration(requestedSeconds)){
+            longToast("Save unsuccessful. Insufficient space.")
+            return
+        }else {
+            var target = File(App.storagePath).resolve(getCurrentLocalDateTimeStamp() + ".wav")
+            var task = doAsync({ throwable: Throwable -> target.delete(); dialog.dismiss(); alert("Failed to save file.") }) {
+                uiThread { dialog.show() }
+                var headerArray = ByteArray(44)
+                target.appendBytes(headerArray)
+                val requestedBytes = App.bytesPerSecond * requestedSeconds
+                var leftToProcess = requestedBytes.toLong()
+                var processed = 0L
+                val newestToOldest = App.instance.folder.listFiles().sortedByDescending { file -> file.name }
+                var mapPointers: MutableMap<File, Long> = mutableMapOf<File, Long>()
+                for (f: File in newestToOldest) {
+                    if (cancel) return@doAsync
+                    if (leftToProcess - f.length() > -1) {
+                        mapPointers.put(f, 0L)
+                        leftToProcess -= f.length()
+                        processed += f.length()
+                        Log.d("Hudson", "Processed ${f.name} ${0L}")
+                    } else {
+                        mapPointers.put(f, f.length() - leftToProcess)
+                        processed += f.length() - leftToProcess
+                        Log.d("Hudson", "Processed ${f.name} ${f.length() + (leftToProcess - f.length())}")
+                        break
+                    }
                 }
-            }
-            Log.d("Hudson", "Map to process" + mapPointers.toString())
-            var processedBytes = 0
-            var progress = 0
-            var previousProgress = 0
-            if (cancel) return@doAsync
-            for (f: File in App.instance.folder.listFiles().sortedBy { file -> file.name }) {
-                if (mapPointers.containsKey(f)) {
-                    val location = mapPointers[f]
-                    if (location != null) {
-                        Log.d("Hudson", "Processing ${f.name} starting at ${location}")
-                        var pointer = RandomAccessFile(f, "r")
-                        pointer.skipBytes(location.toInt())
-                        var barray = ByteArray(1024)
-                        var amountTaken = pointer.read(barray)
-                        processedBytes += amountTaken
-                        while (amountTaken > 0) {
-                            if (cancel) return@doAsync
-                            target.appendBytes(barray)
-                            amountTaken = pointer.read(barray)
+                Log.d("Hudson", "Map to process" + mapPointers.toString())
+                var processedBytes = 0
+                var progress = 0
+                var previousProgress = 0
+                if (cancel) return@doAsync
+                for (f: File in App.instance.folder.listFiles().sortedBy { file -> file.name }) {
+                    if (mapPointers.containsKey(f)) {
+                        val location = mapPointers[f]
+                        if (location != null) {
+                            Log.d("Hudson", "Processing ${f.name} starting at ${location}")
+                            var pointer = RandomAccessFile(f, "r")
+                            pointer.skipBytes(location.toInt())
+                            var barray = ByteArray(1024)
+                            var amountTaken = pointer.read(barray)
                             processedBytes += amountTaken
-                            var holder = (processedBytes.toFloat() / requestedBytes.toFloat() * 100.toFloat()).toInt()
-                            if (holder != previousProgress) {
-                                previousProgress = progress
-                                progress = holder
-                                uiThread { dialog.progress = progress }
+                            while (amountTaken > 0) {
+                                if (cancel) return@doAsync
+                                target.appendBytes(barray)
+                                amountTaken = pointer.read(barray)
+                                processedBytes += amountTaken
+                                var holder = (processedBytes.toFloat() / requestedBytes.toFloat() * 100.toFloat()).toInt()
+                                if (holder != previousProgress) {
+                                    previousProgress = progress
+                                    progress = holder
+                                    uiThread { dialog.progress = progress }
+                                }
                             }
                         }
                     }
-                }
-                var wavHeader = WavHeader(RandomAccessFile(target, "rw"), 44100, 1, 16)
-                wavHeader.writeHeader()
+                    var wavHeader = WavHeader(RandomAccessFile(target, "rw"), 44100, 1, 16)
+                    wavHeader.writeHeader()
 
-                val intent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
-                intent.data = Uri.fromFile(target)
-                context!!.sendBroadcast(intent)
+                    val intent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+                    intent.data = Uri.fromFile(target)
+                    context!!.sendBroadcast(intent)
+                }
+                uiThread { dialog.dismiss() }
             }
-            uiThread { dialog.dismiss() }
+            dialog.setOnCancelListener {
+                task.cancel(true)
+                cancel = true
+                target.delete()
+            }
         }
-        dialog.setOnCancelListener {
-            task.cancel(true)
-            cancel = true
-            target.delete()
-        }
-        return task
+//        return task
     }
     var dots = 0
     lateinit var rootView : View

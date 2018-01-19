@@ -5,6 +5,10 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import org.jetbrains.anko.defaultSharedPreferences
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.support.v4.app.NotificationCompat
+
 
 class OnBootComplete : BroadcastReceiver() {
 

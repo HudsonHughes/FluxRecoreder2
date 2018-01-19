@@ -44,7 +44,7 @@ class RecordingService : Service() {
         val name = "Shadow Recorder"
         // The user-visible description of the channel.
         val description = "Shadow Recorder"
-        val importance = NotificationManager.IMPORTANCE_LOW
+        val importance = NotificationManager.IMPORTANCE_DEFAULT
         if(Build.VERSION.SDK_INT >= 26){
             val mChannel = NotificationChannel(id, name, importance)
             // Configure the notification channel.
@@ -56,7 +56,7 @@ class RecordingService : Service() {
         val notification = NotificationCompat.Builder(this, "ShadowRecorder")
                 .setContentTitle("New Messages")
                 .setContentText("You've received 3 new messages.")
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.drawable.ic_stat_icon)
                 .setContentIntent(pendingIntent)
                 .build()
         startForeground(414, notification)
@@ -111,9 +111,9 @@ class RecordingService : Service() {
                     if(N < 1) {
                         Log.d("Hudson", "Error message after trying read(): $N")
                         val notification = NotificationCompat.Builder(ctx, "ShadowRecorder")
-                                .setContentTitle("Error")
-                                .setContentText("You've received 3 new messages.")
-                                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                                .setContentTitle("Unable to Record")
+                                .setContentText("An error has occurred that keeps us from getting data from the mic.")
+                                .setSmallIcon(R.drawable.ic_stat_error)
                                 .setContentIntent(pendingIntent)
                                 .build()
                         mNotificationManager.notify(415, notification)
@@ -127,9 +127,9 @@ class RecordingService : Service() {
                 }
             }catch (x : FileSystemException) {
                 val notification = NotificationCompat.Builder(ctx, "ShadowRecorder")
-                        .setContentTitle("Out of Space")
-                        .setContentText("You've received 3 new messages.")
-                        .setSmallIcon(R.drawable.ic_launcher_foreground)
+                        .setContentTitle("Recording Interrupted")
+                        .setContentText("There is not enough space for a full audio buffer.")
+                        .setSmallIcon(R.drawable.ic_stat_error)
                         .setContentIntent(pendingIntent)
                         .build()
                 mNotificationManager.notify(415, notification)

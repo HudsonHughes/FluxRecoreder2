@@ -37,6 +37,8 @@ public class PlaybackFragment extends DialogFragment{
 
     private SeekBar mSeekBar = null;
     private FloatingActionButton mPlayButton = null;
+    private FloatingActionButton mFFButton = null;
+    private FloatingActionButton mRewButton = null;
     private TextView mCurrentProgressTextView = null;
     private TextView mFileNameTextView = null;
     private TextView mFileLengthTextView = null;
@@ -134,7 +136,22 @@ public class PlaybackFragment extends DialogFragment{
                 isPlaying = !isPlaying;
             }
         });
+        mFFButton = (FloatingActionButton) view.findViewById(R.id.fab_next);
+        mFFButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
+            }
+        });
+        mFFButton.setVisibility(View.GONE);
+        mRewButton = (FloatingActionButton) view.findViewById(R.id.fab_prev);
+        mRewButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+        mRewButton.setVisibility(View.GONE);
         mFileNameTextView.setText(item.getFile().getName());
         mFileLengthTextView.setText(String.format("%02d:%02d", minutes,seconds));
 
@@ -294,18 +311,18 @@ public class PlaybackFragment extends DialogFragment{
     private Runnable mRunnable = new Runnable() {
         @Override
         public void run() {
-            if(mMediaPlayer != null){
+        if(mMediaPlayer != null){
 
-                int mCurrentPosition = mMediaPlayer.getCurrentPosition();
-                mSeekBar.setProgress(mCurrentPosition);
+            int mCurrentPosition = mMediaPlayer.getCurrentPosition();
+            mSeekBar.setProgress(mCurrentPosition);
 
-                long minutes = TimeUnit.MILLISECONDS.toMinutes(mCurrentPosition);
-                long seconds = TimeUnit.MILLISECONDS.toSeconds(mCurrentPosition)
-                        - TimeUnit.MINUTES.toSeconds(minutes);
-                mCurrentProgressTextView.setText(String.format("%02d:%02d", minutes, seconds));
+            long minutes = TimeUnit.MILLISECONDS.toMinutes(mCurrentPosition);
+            long seconds = TimeUnit.MILLISECONDS.toSeconds(mCurrentPosition)
+                    - TimeUnit.MINUTES.toSeconds(minutes);
+            mCurrentProgressTextView.setText(String.format("%02d:%02d", minutes, seconds));
 
-                updateSeekBar();
-            }
+            updateSeekBar();
+        }
         }
     };
 
