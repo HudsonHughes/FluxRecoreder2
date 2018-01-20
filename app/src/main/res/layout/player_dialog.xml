@@ -55,6 +55,7 @@
 
                 <android.support.design.widget.FloatingActionButton
                     android:id="@+id/fab_next"
+                    android:background="@drawable/orange_background"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignTop="@+id/fab_play"
@@ -67,6 +68,7 @@
 
                 <android.support.design.widget.FloatingActionButton
                     android:id="@+id/fab_prev"
+                    android:background="@drawable/orange_background"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignTop="@+id/fab_play"
@@ -78,6 +80,7 @@
 
                 <android.support.design.widget.FloatingActionButton
                     android:id="@+id/fab_play"
+                    android:background="@drawable/orange_background"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"

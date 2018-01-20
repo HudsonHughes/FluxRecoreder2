@@ -90,7 +90,15 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         }
         val not_button = findPreference("notification")
         not_button.setOnPreferenceClickListener {
-            alert("Google has made it mandatory that background services such as Flux Recorder have a notification attached to them. This keeps rogue apps from stealing resources without your knowledge.", "You can't"){
+            alert("Google has made it mandatory that background services such as Shadow Recorder have a notification attached to them. This keeps rogue apps from stealing resources without your knowledge.", "You can't"){
+                positiveButton("Close") {  }
+            }.show()
+            false
+        }
+
+        val mic_busted = findPreference("micBusted")
+        mic_busted.setOnPreferenceClickListener {
+            alert("Only one app can take hold of the microphone at a time. Shadow Recorder cannot be used in tandem with voice command apps like OK Google or chat apps like Skype.", ""){
                 positiveButton("Close") {  }
             }.show()
             false

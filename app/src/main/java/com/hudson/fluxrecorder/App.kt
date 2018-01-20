@@ -51,7 +51,7 @@ class App : Application() {
         }
     }
     public fun canHandleBufferDuration(duration : Int) : Boolean {
-        val usableSpace = 30 * 60 * bytesPerSecond
+        val usableSpace = folder.usableSpace
         val neededSpace = (duration + 30) * bytesPerSecond
         val alreadyHave = folder.listFiles().sumBy { it.length().toInt() }.toLong()
         if(usableSpace + alreadyHave >= neededSpace)
@@ -66,7 +66,7 @@ class App : Application() {
     }
 
     public fun canHandleWavFileDuration(duration : Int) : Boolean {
-        if(folder.usableSpace > duration * bytesPerSecond + 44)
+        if(File(App.storagePath).usableSpace > duration * bytesPerSecond + 44)
             return true
         return false
     }
@@ -207,7 +207,7 @@ class App : Application() {
                 val notification = NotificationCompat.Builder(instance, "ShadowRecorder")
                         .setContentTitle("Recording Interrupted")
                         .setContentText("Unable to acquire control of the microphone.")
-                        .setSmallIcon(R.drawable.ic_stat_error)
+                        //.setSmallIcon(R.drawable.ic_stat_error)
                         .setContentIntent(pendingIntent)
                         .build()
                 mNotificationManager.notify(415, notification)

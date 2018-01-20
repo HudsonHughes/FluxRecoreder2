@@ -13,8 +13,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_main.*
 import kotlinx.android.synthetic.main.fragment_main.view.*
-import org.jetbrains.anko.support.v4.alert
-import org.jetbrains.anko.support.v4.progressDialog
 import org.jetbrains.anko.*
 import java.io.File
 import java.io.RandomAccessFile
@@ -25,11 +23,11 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import android.content.Intent
 import android.net.Uri
+import android.support.v4.widget.TextViewCompat
 import org.jetbrains.anko.sdk25.coroutines.onClick
-import org.jetbrains.anko.support.v4.act
 import com.ikovac.timepickerwithseconds.MyTimePickerDialog
 import com.ikovac.timepickerwithseconds.TimePicker
-import org.jetbrains.anko.support.v4.longToast
+import org.jetbrains.anko.support.v4.*
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -65,13 +63,19 @@ class MainFragment : Fragment() {
     fun saveAudio(requestedSeconds : Int) {
         var dialog = progressDialog(message = "Please wait a bit…", title = "Saving wav file")
         var cancel = false
+        var serviceWasRunning = App.isServiceRunning()
         if(!App.instance.canHandleWavFileDuration(requestedSeconds)){
             longToast("Save unsuccessful. Insufficient space.")
+            dialog.cancel()
             return
         }else {
             var target = File(App.storagePath).resolve(getCurrentLocalDateTimeStamp() + ".wav")
             var task = doAsync({ throwable: Throwable -> target.delete(); dialog.dismiss(); alert("Failed to save file.") }) {
-                uiThread { dialog.show() }
+                onUiThread {
+                    dialog.show()
+                    if(serviceWasRunning)
+                    App.stopService()
+                }
                 var headerArray = ByteArray(44)
                 target.appendBytes(headerArray)
                 val requestedBytes = App.bytesPerSecond * requestedSeconds
@@ -129,12 +133,18 @@ class MainFragment : Fragment() {
                     intent.data = Uri.fromFile(target)
                     context!!.sendBroadcast(intent)
                 }
-                uiThread { dialog.dismiss() }
+                uiThread {
+                    if(serviceWasRunning)
+                        App.startService()
+                    dialog.dismiss()
+                }
             }
             dialog.setOnCancelListener {
                 task.cancel(true)
                 cancel = true
                 target.delete()
+                if(serviceWasRunning)
+                    App.startService()
             }
         }
 //        return task
@@ -198,7 +208,9 @@ class MainFragment : Fragment() {
 
         var dateFormat : DateFormat = SimpleDateFormat("mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
-
+        TextViewCompat.setAutoSizeTextTypeWithDefaults(
+                rootView.textView,TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM
+        )
         rootView.save_button.onClick {
             if(App.bufferDuration < 1){
                 activity?.toast("There is nothing in the buffer to save.")
@@ -210,14 +222,17 @@ class MainFragment : Fragment() {
                         /*time.setText(getString(R.string.time) + String.format("%02d", hourOfDay)+
 						":" + String.format("%02d", minute) +
 						":" + String.format("%02d", seconds));	*/
-                        var requested_time : Int = hourOfDay * 60 * 60 + minute * 60 + seconds * 60
+                        var requested_time : Int = hourOfDay * 60 * 60 + minute * 60 + seconds
                         if(requested_time > (if (App.bufferDuration > App.secondsDesired)  App.secondsDesired else App.bufferDuration)){
                             alert(message = "The time specified is larger than the buffer.", title = "Save entire buffer?"){
-                                positiveButton("Yes"){ saveAudio(requested_time) }
+                                positiveButton("Yes"){ saveAudio(App.secondsDesired) }
                                 negativeButton("Cancel"){}
                             }.show()
                         }else{
+                            if( requested_time > 0 )
                             saveAudio(requested_time)
+                            else
+                                toast("Set a time greater than zero seconds.")
                         }
                     }
                 }, 0, 1, 0, true)
