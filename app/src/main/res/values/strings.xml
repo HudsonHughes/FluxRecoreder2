@@ -8,7 +8,7 @@
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="instruction_off">&appname; is currently off.\nActivate it in the settings.</string>
-    <string name="instruction_on">You can deactivate Flux Recorder in the settings.</string>
+    <string name="instruction_on">You can deactivate Shadow Recorder in the settings.</string>
     <string name="state_of_recorder">The past %1$s of recording can be saved for later playback. Up to %2$s will placed in the buffer. The limit can be changed in the settings.</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

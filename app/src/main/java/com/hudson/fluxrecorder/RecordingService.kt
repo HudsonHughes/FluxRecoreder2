@@ -54,12 +54,14 @@ class RecordingService : Service() {
         }
 
         val notification = NotificationCompat.Builder(this, "ShadowRecorder")
-                .setContentTitle("New Messages")
-                .setContentText("You've received 3 new messages.")
-                .setSmallIcon(R.drawable.ic_stat_icon)
+                .setContentTitle("Shadow Recorder Running")
+                .setContentText("Click to open app")
+                .setSmallIcon(R.drawable.ic_stat_insert_emoticon)
                 .setContentIntent(pendingIntent)
                 .build()
         startForeground(414, notification)
+
+        //mNotificationManager.notify(414, notification)
         defaultSharedPreferences.edit().putBoolean("on_off", true).commit()
         App.recorderRunning = true
         audioIn = AudioIn(this, pendingIntent, { stopSelf() })

@@ -24,6 +24,7 @@ import java.time.Duration
 import android.provider.Settings.System.canWrite
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.DividerItemDecoration
 import kotlinx.android.synthetic.main.fragment_item_list.view.*
 import org.greenrobot.eventbus.EventBus
 import org.jetbrains.anko.sdk25.coroutines.onClick
@@ -49,6 +50,9 @@ class PlaylistFragment : Fragment() {
         view2 = inflater.inflate(R.layout.fragment_item_list, container, false)
         // Set the adapter
         var listView = view2.list
+
+
+
         var empt_view = view2.empty_view
         if (listView is RecyclerView) {
             var context = listView.getContext()
@@ -57,6 +61,11 @@ class PlaylistFragment : Fragment() {
             } else {
                 listView.layoutManager = GridLayoutManager(context, mColumnCount)
             }
+
+            var dividerItemDecoration = DividerItemDecoration(listView.context,
+                    listView.layoutManager.layoutDirection);
+
+
             val ls = getMusic()
             view2.list.adapter = MyItemRecyclerViewAdapter(context as AppCompatActivity, ls)
             if (ls.isEmpty()){

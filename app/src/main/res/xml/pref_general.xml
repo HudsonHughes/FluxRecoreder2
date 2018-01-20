@@ -35,6 +35,10 @@
         android:summary=""/>
 
     <Preference
+        android:key="micBusted"
+        android:title="I can't use my microphone in other apps"/>
+
+    <Preference
         android:key="shareApp"
         android:title="Share this app with your friends"
         android:summary=""/>
@@ -43,6 +47,8 @@
         android:key="rateOnPlay"
         android:title="Rate us on Google Play"
         android:summary=""/>
+
+
 
 
 </PreferenceScreen>
