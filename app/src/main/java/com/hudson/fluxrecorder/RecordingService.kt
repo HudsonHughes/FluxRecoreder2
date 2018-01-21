@@ -56,7 +56,7 @@ class RecordingService : Service() {
         val notification = NotificationCompat.Builder(this, "ShadowRecorder")
                 .setContentTitle("Shadow Recorder Running")
                 .setContentText("Click to open app")
-                .setSmallIcon(R.drawable.ic_stat_insert_emoticon)
+                .setSmallIcon(R.drawable.ic_stat_icon)
                 .setContentIntent(pendingIntent)
                 .build()
         startForeground(414, notification)

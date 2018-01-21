@@ -16,6 +16,9 @@ import org.jetbrains.anko.alert
 import org.jetbrains.anko.yesButton
 import android.support.annotation.NonNull
 import android.view.Window
+import org.jetbrains.anko.doAsync
+import java.io.File
+import java.io.RandomAccessFile
 
 
 class CentralActivity : AppCompatActivity() {
@@ -65,7 +68,15 @@ class CentralActivity : AppCompatActivity() {
         })
 
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
+        doAsync {
 
+            for(file in App.instance.folder.listFiles()){
+                var target = File(file.absolutePath + ".wav")
+                file.copyTo(target)
+                var wavHeader = WavHeader(RandomAccessFile(target, "rw"), 44100, 1, 16)
+                wavHeader.writeHeader()
+            }
+        }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int,
