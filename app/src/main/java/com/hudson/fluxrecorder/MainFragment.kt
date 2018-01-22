@@ -61,22 +61,26 @@ class MainFragment : Fragment() {
 
     }
     fun saveAudio(requestedSeconds : Int) {
-        var dialog = progressDialog(message = "Please wait a bit…", title = "Saving wav file")
+        val notset = arrayOf(App.channelConfiguration, App.channelCount, App.encoding, App.encodingActual, App.sampleRate).any({it == -1})
         var cancel = false
         var serviceWasRunning = App.isServiceRunning()
         if(!App.instance.canHandleWavFileDuration(requestedSeconds)){
             longToast("Save unsuccessful. Insufficient space.")
-            dialog.cancel()
             return
-        }else {
+        }else if(notset){
+            alert("Audio encoding options must be set before saving files. Activating recording once will set the encoding options.").show()
+            return
+        }else{
+            var dialog = progressDialog(message = "Please wait a bit…", title = "Saving wav file")
             var target = File(App.storagePath).resolve(getCurrentLocalDateTimeStamp() + ".wav")
-            var task = doAsync({ throwable: Throwable -> target.delete(); dialog.dismiss(); alert("Failed to save file.") }) {
+            var task = doAsync({ throwable: Throwable -> throwable.printStackTrace(); target.delete(); dialog.dismiss(); alert("Failed to save file.").show() }) {
                 onUiThread {
                     dialog.show()
                     if(serviceWasRunning)
                     App.stopService()
                 }
                 var headerArray = ByteArray(44)
+                target.createNewFile()
                 target.appendBytes(headerArray)
                 val requestedBytes = App.bytesPerSecond * requestedSeconds
                 var leftToProcess = requestedBytes.toLong()
@@ -84,6 +88,7 @@ class MainFragment : Fragment() {
                 val newestToOldest = App.instance.folder.listFiles().sortedByDescending { file -> file.name }
                 var mapPointers: MutableMap<File, Long> = mutableMapOf<File, Long>()
                 for (f: File in newestToOldest) {
+                    Log.d("Hudson", "left to process ${leftToProcess}")
                     if (cancel) return@doAsync
                     if (leftToProcess - f.length() > -1) {
                         mapPointers.put(f, 0L)
@@ -126,7 +131,7 @@ class MainFragment : Fragment() {
                             }
                         }
                     }
-                    var wavHeader = WavHeader(RandomAccessFile(target, "rw"), 44100, 1, 16)
+                    var wavHeader = WavHeader(RandomAccessFile(target, "rw"), App.sampleRate, App.channelCount, 16)
                     wavHeader.writeHeader()
 
                     val intent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
@@ -229,10 +234,11 @@ class MainFragment : Fragment() {
                                 negativeButton("Cancel"){}
                             }.show()
                         }else{
-                            if( requested_time > 0 )
-                            saveAudio(requested_time)
-                            else
+                            if( requested_time > 0 ) {
+                                saveAudio(requested_time)
+                            } else {
                                 toast("Set a time greater than zero seconds.")
+                            }
                         }
                     }
                 }, 0, 1, 0, true)
@@ -259,7 +265,7 @@ class MainFragment : Fragment() {
     }
 
     fun getCurrentLocalDateTimeStamp(): String {
-        return SimpleDateFormat("dd-MM-yyyy_hh:mm:ss").format(Date())
+        return SimpleDateFormat("dd-MM-yyyy_hh-mm-ss").format(Date())
     }
 
     public fun formatTime(time : Long) : String{

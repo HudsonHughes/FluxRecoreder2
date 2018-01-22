@@ -19,6 +19,14 @@ import java.text.SimpleDateFormat
 import java.util.*
 import org.greenrobot.eventbus.EventBus
 import org.jetbrains.anko.*
+import android.content.Intent
+import android.support.v4.content.ContextCompat.startActivity
+import android.os.Environment.getExternalStorageDirectory
+import android.support.v4.content.ContextCompat.startActivity
+
+
+
+
 
 class MyItemRecyclerViewAdapter(private val activity : AppCompatActivity, private val mValues : List<PlaylistFragment.Song>) : RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder>() {
 
@@ -102,7 +110,11 @@ class MyItemRecyclerViewAdapter(private val activity : AppCompatActivity, privat
         val choices = listOf("Share", "Rename", "Delete")
         context.selector(file.nameWithoutExtension, choices, { dialogInterface, i ->
             if(i == 0){
-
+                val shareIntent = Intent(Intent.ACTION_SEND)
+                shareIntent.type = "audio/*"
+                val photoFile = file
+                shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(photoFile))
+                startActivity(context, Intent.createChooser(shareIntent, "Share a recording"), null)
             }
             if(i == 1){
                 if (!file.canWrite()) {
@@ -114,7 +126,7 @@ class MyItemRecyclerViewAdapter(private val activity : AppCompatActivity, privat
                 }
             }
             if(i == 2){
-                alrt.show()
+                alrt2.show()
             }
         })
     }

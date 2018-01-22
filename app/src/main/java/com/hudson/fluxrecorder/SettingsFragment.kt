@@ -19,6 +19,8 @@ import org.jetbrains.anko.support.v4.alert
 import org.jetbrains.anko.support.v4.defaultSharedPreferences
 import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.yesButton
+import android.content.Intent
+import android.net.Uri
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -90,7 +92,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         }
         val not_button = findPreference("notification")
         not_button.setOnPreferenceClickListener {
-            alert("Google has made it mandatory that background services such as Shadow Recorder have a notification attached to them. This keeps rogue apps from stealing resources without your knowledge.", "You can't"){
+            alert("Google has made it mandatory that background services such as Retroactive Recorder have a notification attached to them. This keeps rogue apps from stealing resources without your knowledge.", "You can't"){
                 positiveButton("Close") {  }
             }.show()
             false
@@ -98,7 +100,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
         val mic_busted = findPreference("micBusted")
         mic_busted.setOnPreferenceClickListener {
-            alert("Only one app can take hold of the microphone at a time. Shadow Recorder cannot be used in tandem with voice command apps like OK Google or chat apps like Skype.", ""){
+            alert("Only one app can take hold of the microphone at a time. Retroactive Recorder cannot be used in tandem with voice command apps like OK Google or chat apps like Skype.", ""){
                 positiveButton("Close") {  }
             }.show()
             false
@@ -106,13 +108,20 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
         val shareOnPlay = findPreference("shareApp")
         shareOnPlay.setOnPreferenceClickListener {
-
+            val sendIntent = Intent()
+            sendIntent.action = Intent.ACTION_SEND
+            sendIntent.putExtra(Intent.EXTRA_TEXT,
+                    "A recorder with premonition: https://play.google.com/store/apps/details?id=com.hudson.fluxrecorder")
+            sendIntent.type = "text/plain"
+            startActivity(sendIntent)
             false
         }
 
         val rateOnPlay = findPreference("rateOnPlay")
         rateOnPlay.setOnPreferenceClickListener {
-
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse("market://details?id=com.example.android")
+            startActivity(intent)
             false
         }
     }

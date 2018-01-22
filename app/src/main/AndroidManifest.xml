@@ -21,6 +21,9 @@
             android:exported="true" />
 
         <activity
+            android:launchMode="singleInstance"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
             android:name=".CentralActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

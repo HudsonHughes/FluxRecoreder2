@@ -134,7 +134,7 @@ class PlaylistFragment : Fragment() {
             val uri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
             Log.d("Hudson", App.storagePath)
             cursor = activity!!.contentResolver.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, projection,MediaStore.Audio.Media.DATA + " like ? ",
-                    arrayOf<String>("%fluxrecorder%"),  null);
+                    arrayOf<String>("%RetroactiveRecorder%"),  null);
             if (cursor != null) {
                 cursor!!.moveToFirst()
                 while (!cursor!!.isAfterLast()) {

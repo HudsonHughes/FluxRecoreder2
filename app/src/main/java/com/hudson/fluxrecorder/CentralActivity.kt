@@ -68,15 +68,7 @@ class CentralActivity : AppCompatActivity() {
         })
 
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
-        doAsync {
 
-            for(file in App.instance.folder.listFiles()){
-                var target = File(file.absolutePath + ".wav")
-                file.copyTo(target)
-                var wavHeader = WavHeader(RandomAccessFile(target, "rw"), 44100, 1, 16)
-                wavHeader.writeHeader()
-            }
-        }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int,

@@ -137,9 +137,11 @@ class App : Application() {
             set(value) {
                 instance.defaultSharedPreferences.edit().putLong(bufferSize, value).apply()
             }
-        var bytesPerSecond : Int = 0
-            get() = 1 * 44100 * 2 * 1
-            private set
+        var bytesPerSecond : Int
+            get() = instance.defaultSharedPreferences.getString("bytesPerSecond", (1 * 44100 * 2 * 1).toString()).toInt()
+            set(value) {
+                instance.defaultSharedPreferences.edit().putString("bytesPerSecond", value.toString()).apply()
+            }
         var bufferDuration : Int = 0
             get() {
                 Log.d("Hudson", "Buffer Size " + instance.refreshBufferSize().toString() + " bytesPerSecond " + bytesPerSecond)
@@ -151,11 +153,37 @@ class App : Application() {
             set(value) {
                 instance.defaultSharedPreferences.edit().putString("seconds_desired", value.toString()).apply()
             }
+        var channelCount : Int
+            get() = instance.defaultSharedPreferences.getString("channelCount", "1").toInt()
+            set(value) {
+                instance.defaultSharedPreferences.edit().putString("channelCount", value.toString()).apply()
+            }
+
+        var channelConfiguration : Int
+            get() = instance.defaultSharedPreferences.getString("channelConfiguration", "-1").toInt()
+            set(value) {
+                instance.defaultSharedPreferences.edit().putString("channelConfiguration", value.toString()).apply()
+            }
+        var sampleRate : Int
+            get() = instance.defaultSharedPreferences.getString("sampleRate", "-1").toInt()
+            set(value) {
+                instance.defaultSharedPreferences.edit().putString("sampleRate", value.toString()).apply()
+            }
+        var encoding : Int
+            get() = instance.defaultSharedPreferences.getString("encoding", "-1").toInt()
+            set(value) {
+                instance.defaultSharedPreferences.edit().putString("encoding", value.toString()).apply()
+            }
+        var encodingActual : Int
+            get() = instance.defaultSharedPreferences.getString("encodingActual", "-1").toInt()
+            set(value) {
+                instance.defaultSharedPreferences.edit().putString("encodingActual", value.toString()).apply()
+            }
         var storagePath : String
             get() {
-                val storage_folder = Environment.getExternalStorageDirectory().resolve("FluxRecorder")
+                val storage_folder = Environment.getExternalStorageDirectory().resolve("RetroactiveRecorder")
                 if(storage_folder.exists() && storage_folder.isFile){
-                    storage_folder.resolve("FluxRecorder").renameTo(Environment.getExternalStorageDirectory().resolve("FluxRecorder_old"))
+                    storage_folder.resolve("RetroactiveRecorder").renameTo(Environment.getExternalStorageDirectory().resolve("RetroactiveRecorder_old"))
                 }
                 if(!storage_folder.exists()) storage_folder.mkdir()
                 return instance.defaultSharedPreferences.getString("storage_path", storage_folder.path)
@@ -163,13 +191,56 @@ class App : Application() {
             set(value) {
                 instance.defaultSharedPreferences.edit().putString("storage_path", value).apply()
             }
+
+        private val mSampleRates = intArrayOf(44100, 22050, 11025, 8000)
+        fun findAudioRecord(): AudioRecord? {
+            for (rate in mSampleRates) {
+                for (audioFormat in shortArrayOf(AudioFormat.ENCODING_PCM_16BIT.toShort(), AudioFormat.ENCODING_PCM_8BIT.toShort())) {
+                    for (channelConfig in shortArrayOf(AudioFormat.CHANNEL_IN_MONO.toShort(), AudioFormat.CHANNEL_IN_STEREO.toShort())) {
+                        try {
+                            Log.d("Hudson", "Attempting rate " + rate + "Hz, bits: " + audioFormat + ", channel: "
+                                    + channelConfig)
+                            val bufferSize = AudioRecord.getMinBufferSize(rate, channelConfig.toInt(), audioFormat.toInt())
+
+                            if (bufferSize != AudioRecord.ERROR_BAD_VALUE) {
+                                // check if we can instantiate and have a success
+                                val recorder = AudioRecord(MediaRecorder.AudioSource.MIC, rate, channelConfig.toInt(), audioFormat.toInt(), bufferSize)
+
+                                if (recorder.state == AudioRecord.STATE_INITIALIZED) {
+                                    Log.d("Hudson", "This rate works " + rate + "Hz, bits: " + audioFormat + ", channel: "
+                                            + channelConfig)
+                                    return recorder
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Log.e("Hudson", rate.toString() + "Exception, keep trying.", e)
+                        }
+
+                    }
+                }
+            }
+            return null
+        }
+
         fun testMicrophone() : Boolean {
-            var N = AudioRecord.getMinBufferSize(44100, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
-            val recorder = AudioRecord(MediaRecorder.AudioSource.MIC,
-                    44100,
-                    AudioFormat.CHANNEL_IN_MONO,
-                    AudioFormat.ENCODING_PCM_16BIT,
-                    N * 10)
+            val recorder = findAudioRecord()
+            if(recorder == null)
+                return false
+            channelCount = recorder.channelCount
+            channelConfiguration = recorder.channelConfiguration
+            sampleRate = recorder.sampleRate
+            if(recorder.audioFormat == AudioFormat.ENCODING_PCM_8BIT) {
+                encoding = 1
+                encodingActual = 8
+            }
+            if(recorder.audioFormat == AudioFormat.ENCODING_PCM_16BIT){
+                encoding = 2
+                encodingActual = 16
+            }
+            bytesPerSecond = 1 * sampleRate * (encodingActual / 8) * channelCount
+            var N = AudioRecord.getMinBufferSize(recorder.sampleRate, recorder.channelConfiguration, recorder.audioFormat)
+            if(N < 1)
+                return false
             recorder.startRecording()
             var buffer = ByteArray(N * 10)
             N = recorder.read(buffer, 0, buffer.size)
@@ -177,7 +248,7 @@ class App : Application() {
                 recorder.stop()
                 recorder.release()
             }catch(e : Throwable){
-
+                e.printStackTrace()
             }
             return N > 0
         }

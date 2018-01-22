@@ -1,7 +1,5 @@
 package com.hudson.fluxrecorder
 
-import android.app.NotificationManager
-import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.media.AudioFormat
@@ -11,12 +9,10 @@ import android.util.Log
 import org.greenrobot.eventbus.EventBus
 import android.media.MediaRecorder
 import android.R.attr.process
-import android.app.Notification
+import android.app.*
 import android.media.MediaRecorder.AudioSource
-import android.app.PendingIntent
 import android.os.Handler
 import android.support.v4.app.NotificationCompat
-import android.app.NotificationChannel
 import android.graphics.Color
 import android.os.Build
 import android.support.annotation.RequiresApi
@@ -41,9 +37,9 @@ class RecordingService : Service() {
         mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val id = "ShadowRecorder"
         // The user-visible name of the channel.
-        val name = "Shadow Recorder"
+        val name = "Retroactive Recorder"
         // The user-visible description of the channel.
-        val description = "Shadow Recorder"
+        val description = "Retroactive Recorder"
         val importance = NotificationManager.IMPORTANCE_DEFAULT
         if(Build.VERSION.SDK_INT >= 26){
             val mChannel = NotificationChannel(id, name, importance)
@@ -54,7 +50,7 @@ class RecordingService : Service() {
         }
 
         val notification = NotificationCompat.Builder(this, "ShadowRecorder")
-                .setContentTitle("Shadow Recorder Running")
+                .setContentTitle("Retroactive Recorder Running")
                 .setContentText("Click to open app")
                 .setSmallIcon(R.drawable.ic_stat_icon)
                 .setContentIntent(pendingIntent)
@@ -99,11 +95,11 @@ class RecordingService : Service() {
 
             try { // ... initialise
 
-                var N = AudioRecord.getMinBufferSize(44100, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
+                var N = AudioRecord.getMinBufferSize(App.sampleRate, App.channelCount, App.encoding)
                 recorder = AudioRecord(AudioSource.MIC,
-                        44100,
-                        AudioFormat.CHANNEL_IN_MONO,
-                        AudioFormat.ENCODING_PCM_16BIT,
+                        App.sampleRate,
+                        App.channelConfiguration,
+                        App.encoding,
                         N * 10)
                 recorder.startRecording()
 
