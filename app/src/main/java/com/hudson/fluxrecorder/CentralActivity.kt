@@ -15,13 +15,19 @@ import com.anthonycr.grant.PermissionsManager
 import org.jetbrains.anko.alert
 import org.jetbrains.anko.yesButton
 import android.support.annotation.NonNull
+import android.util.Log
 import android.view.Window
+import com.android.billingclient.api.BillingClient
 import org.jetbrains.anko.doAsync
 import java.io.File
 import java.io.RandomAccessFile
+import com.android.billingclient.api.BillingClient.BillingResponse
+import com.android.billingclient.api.BillingClientStateListener
+import com.android.billingclient.api.Purchase
+import com.android.billingclient.api.PurchasesUpdatedListener
 
 
-class CentralActivity : AppCompatActivity() {
+class CentralActivity : AppCompatActivity(), PurchasesUpdatedListener {
 
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {
@@ -68,7 +74,34 @@ class CentralActivity : AppCompatActivity() {
         })
 
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
+        val mBillingClient : BillingClient = BillingClient.newBuilder(this).setListener(this).build()
+        mBillingClient.startConnection(object : BillingClientStateListener {
+            override fun onBillingSetupFinished(@BillingResponse billingResponseCode: Int) {
+                if (billingResponseCode == BillingResponse.OK) {
+                    // The billing client is ready. You can query purchases here.
 
+                }
+            }
+
+            override fun onBillingServiceDisconnected() {
+                // Try to restart the connection on the next request to
+                // Google Play by calling the startConnection() method.
+
+            }
+        })
+    }
+
+    override fun onPurchasesUpdated(@BillingResponse responseCode: Int,
+                                             purchases: List<Purchase>?) {
+        if (responseCode == BillingResponse.OK && purchases != null) {
+            for (purchase in purchases) {
+                alert("Purchase successful you can now record for up to two hours.").show()
+            }
+        } else if (responseCode == BillingResponse.USER_CANCELED) {
+            // Handle an error caused by a user cancelling the purchase flow.
+        } else {
+            // Handle any other error codes.
+        }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int,

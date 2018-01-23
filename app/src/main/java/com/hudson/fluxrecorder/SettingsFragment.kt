@@ -23,6 +23,8 @@ import android.content.Intent
 import android.net.Uri
 
 
+
+
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
@@ -119,9 +121,13 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
 
         val rateOnPlay = findPreference("rateOnPlay")
         rateOnPlay.setOnPreferenceClickListener {
-            val intent = Intent(Intent.ACTION_VIEW)
-            intent.data = Uri.parse("market://details?id=com.example.android")
-            startActivity(intent)
+            val appPackageName = context!!.packageName // getPackageName() from Context or Activity object
+            try {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)))
+            } catch (anfe: android.content.ActivityNotFoundException) {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)))
+            }
+
             false
         }
     }

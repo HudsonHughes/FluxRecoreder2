@@ -10,8 +10,8 @@ android {
         applicationId "com.hudson.fluxrecorder"
         minSdkVersion 16
         targetSdkVersion 26
-        versionCode 2
-        versionName "1.02"
+        versionCode 3
+        versionName "1.03"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -26,6 +26,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:support-v4:+'
     implementation 'com.android.support:recyclerview-v7:+'
+    compile 'com.android.billingclient:billing:1.0'
     compile "org.jetbrains.anko:anko:+"
     compile 'org.greenrobot:eventbus:+'
     compile "org.jetbrains.anko:anko-constraint-layout:+"
