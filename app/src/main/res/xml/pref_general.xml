@@ -30,6 +30,11 @@
         android:summary=""/>
 
     <Preference
+        android:key="premium"
+        android:title="Want to record more than 5 minutes?"
+        android:summary=""/>
+
+    <Preference
         android:key="notification"
         android:title="Want to remove the notification?"
         android:summary=""/>

@@ -100,6 +100,17 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
             false
         }
 
+        val premium = findPreference("premium")
+        premium.setOnPreferenceClickListener {
+            alert("By purchasing the premium add-on you will be able to record up to 1 hour of audio", "Go Premium"){
+                positiveButton("Buy") {
+                    (activity as CentralActivity).startPurchase()
+                }
+                negativeButton("Not now") { }
+            }.show()
+            false
+        }
+
         val mic_busted = findPreference("micBusted")
         mic_busted.setOnPreferenceClickListener {
             alert("Only one app can take hold of the microphone at a time. Retroactive Recorder cannot be used in tandem with voice command apps like OK Google or chat apps like Skype.", ""){

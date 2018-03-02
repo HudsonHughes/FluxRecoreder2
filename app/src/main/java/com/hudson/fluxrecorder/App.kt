@@ -14,14 +14,30 @@ import android.os.Environment
 import android.support.v4.app.NotificationCompat
 import android.util.Log
 import org.jetbrains.anko.defaultSharedPreferences
+import org.solovyev.android.checkout.Billing
 import java.io.*
 import kotlin.system.measureTimeMillis
+import javax.annotation.Nonnull
+
+
 
 
 /**
  * Created by Hudson Hughes on 12/16/2017.
  */
 class App : Application() {
+
+    private val mBilling = Billing(this, object : Billing.DefaultConfiguration() {
+        override fun getPublicKey(): String {
+            // encrypted public key of the app. Plain version can be found in Google Play's Developer
+            // Console in Service & APIs section under "YOUR LICENSE KEY FOR THIS APPLICATION" title.
+            // A naive encryption algorithm is used to "protect" the key. See more about key protection
+            // here: https://developer.android.com/google/play/billing/billing_best_practices.html#key
+            val s = ""
+            return Encryption.decrypt(s, "96hudson@gmail.com")
+        }
+    })
+
     lateinit var folder : File
     override fun onCreate() {
         super.onCreate()
@@ -107,10 +123,8 @@ class App : Application() {
     companion object {
         val maximumTime : String = "maximumTime"
         val bufferSize : String = "bufferSize"
-
         lateinit var instance: App
             private set
-
         var maxTime : Int
             get() = instance.defaultSharedPreferences.getInt(maximumTime, 2)
             set(value) {
@@ -158,7 +172,6 @@ class App : Application() {
             set(value) {
                 instance.defaultSharedPreferences.edit().putString("channelCount", value.toString()).apply()
             }
-
         var channelConfiguration : Int
             get() = instance.defaultSharedPreferences.getString("channelConfiguration", "-1").toInt()
             set(value) {
@@ -191,7 +204,6 @@ class App : Application() {
             set(value) {
                 instance.defaultSharedPreferences.edit().putString("storage_path", value).apply()
             }
-
         private val mSampleRates = intArrayOf(44100, 22050, 11025, 8000)
         fun findAudioRecord(): AudioRecord? {
             for (rate in mSampleRates) {
@@ -221,7 +233,6 @@ class App : Application() {
             }
             return null
         }
-
         fun testMicrophone() : Boolean {
             val recorder = findAudioRecord()
             if(recorder == null)
@@ -295,6 +306,10 @@ class App : Application() {
             if ( isServiceRunning() )
                 return stopService()
             return startService()
+        }
+
+        fun getBilling(): Billing {
+            return instance.mBilling
         }
 
         fun resizeBuffer(new_seconds_desired : Int) : Boolean {

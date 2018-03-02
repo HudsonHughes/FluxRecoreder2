@@ -25,9 +25,17 @@ import com.android.billingclient.api.BillingClient.BillingResponse
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
+import org.solovyev.android.checkout.*
+import java.lang.Exception
+import javax.annotation.Nonnull
 
 
-class CentralActivity : AppCompatActivity(), PurchasesUpdatedListener {
+
+
+class CentralActivity : AppCompatActivity() {
+
+    lateinit var mCheckout : ActivityCheckout
+    val premium = "premium"
 
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {
@@ -56,7 +64,6 @@ class CentralActivity : AppCompatActivity(), PurchasesUpdatedListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        requestWindowFeature(Window.FEATURE_NO_TITLE)
         setContentView(R.layout.activity_central)
         PermissionsManager.getInstance().requestPermissionsIfNecessaryForResult(this,
                 arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO, Manifest.permission.RECEIVE_BOOT_COMPLETED), object : PermissionsResultAction() {
@@ -74,39 +81,40 @@ class CentralActivity : AppCompatActivity(), PurchasesUpdatedListener {
         })
 
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
-        val mBillingClient : BillingClient = BillingClient.newBuilder(this).setListener(this).build()
-        mBillingClient.startConnection(object : BillingClientStateListener {
-            override fun onBillingSetupFinished(@BillingResponse billingResponseCode: Int) {
-                if (billingResponseCode == BillingResponse.OK) {
-                    // The billing client is ready. You can query purchases here.
 
-                }
-            }
-
-            override fun onBillingServiceDisconnected() {
-                // Try to restart the connection on the next request to
-                // Google Play by calling the startConnection() method.
-
-            }
-        })
+        val billing : Billing = App.getBilling()
+        mCheckout = Checkout.forActivity(this, billing)
+        mCheckout.start()
+        mCheckout.loadInventory(Inventory.Request.create().loadAllPurchases(), InventoryCallback())
     }
 
-    override fun onPurchasesUpdated(@BillingResponse responseCode: Int,
-                                             purchases: List<Purchase>?) {
-        if (responseCode == BillingResponse.OK && purchases != null) {
-            for (purchase in purchases) {
-                alert("Purchase successful you can now record for up to two hours.").show()
-            }
-        } else if (responseCode == BillingResponse.USER_CANCELED) {
-            // Handle an error caused by a user cancelling the purchase flow.
-        } else {
-            // Handle any other error codes.
-        }
+    override fun onDestroy() {
+        mCheckout.stop()
+        super.onDestroy()
+    }
+
+    fun startPurchase() {
+        mCheckout.startPurchaseFlow(ProductTypes.IN_APP, premium, null, PurchaseListener(this))
     }
 
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<String>,
                                             grantResults: IntArray) {
         PermissionsManager.getInstance().notifyPermissionsChange(permissions, grantResults)
+    }
+
+    private inner class InventoryCallback : Inventory.Callback {
+        override fun onLoaded(products: Inventory.Products) {
+            val product = products.get(ProductTypes.IN_APP)
+            if (!product.supported) {
+                // billing is not supported, user can't purchase anything. Don't show ads in this
+                // case
+                return
+            }
+            if (product.isPurchased(premium)) {
+                return
+            }
+
+        }
     }
 }
