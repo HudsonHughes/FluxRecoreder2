@@ -36,7 +36,7 @@ class WavHeader(internal var randomAccessFile: RandomAccessFile, internal var mS
 
         file.writeBytes("data") // data subchunk header
         file.writeInt(Integer.reverseBytes(file.length().toInt() - 44)) // data subchunk size
-        Log.d("Hudson", "Wave file size = " + (file.length().toInt() - 44))
+
         file.close()
         file = null
     }

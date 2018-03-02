@@ -30,7 +30,7 @@ class RecordingService : Service() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
         super.onCreate()
-        Log.d("Hudson", "service onCreate")
+
 //        EventBus.getDefault().register(this);
         val notificationIntent = Intent(this, CentralActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
@@ -65,7 +65,7 @@ class RecordingService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d("Hudson", "service onDestroy")
+
         App.recorderRunning = false
         audioIn.close()
 
@@ -107,7 +107,7 @@ class RecordingService : Service() {
                     val buffer = buffers[ix++ % buffers.size]
                     N = recorder.read(buffer, 0, buffer.size)
                     if(N < 1) {
-                        Log.d("Hudson", "Error message after trying read(): $N")
+
                         val notification = NotificationCompat.Builder(ctx, "ShadowRecorder")
                                 .setContentTitle("Unable to Record")
                                 .setContentText("An error has occurred that keeps us from getting data from the mic.")
@@ -118,7 +118,7 @@ class RecordingService : Service() {
                         break
                     } else {
                         if (buffer.size != N)
-                            Log.d("Hudson", "Result from read(): $N")
+
                         App.instance.writeBuffer(buffer)
                     }
                     //process is what you will do with the data...not defined here

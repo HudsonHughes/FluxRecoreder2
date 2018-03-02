@@ -21,8 +21,8 @@ import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.yesButton
 import android.content.Intent
 import android.net.Uri
-
-
+import org.w3c.dom.ls.LSException
+import java.util.concurrent.atomic.AtomicLongArray
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -40,10 +40,18 @@ private const val ARG_PARAM2 = "param2"
  *
  */
 class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedPreferenceChangeListener {
+
+    private lateinit var buffer_size_list : ListPreference
+    fun refreshTimes(){
+
+        buffer_size_list.entries = if ((activity as CentralActivity).premium) arrayOf("1 minute", "2 minutes", "5 minutes", "15 minutes", "30 minutes", "45 minutes", "60 minutes") else arrayOf("1 minute", "2 minutes", "5 minutes")
+        buffer_size_list.entryValues = if ((activity as CentralActivity).premium) arrayOf("60", "120", "300", "900", "1800", "2700", "3600") else arrayOf("60", "120", "300")
+    }
+
     override fun onCreatePreferencesFix(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.pref_general, rootKey)
         val activation_switch = findPreference("on_off")
-        val buffer_size_list = findPreference("seconds_desired")
+        buffer_size_list = findPreference("seconds_desired") as ListPreference
         activation_switch.onPreferenceChangeListener = android.support.v7.preference.Preference.OnPreferenceChangeListener{
             preference, newValue ->
             if (newValue as Boolean) {
@@ -59,6 +67,8 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
             }
         }
         (activation_switch as CheckBoxPreference).isChecked = App.isServiceRunning()
+        buffer_size_list.entries = if ((activity as CentralActivity).premium) arrayOf("1 minute", "2 minutes", "5 minutes", "15 minutes", "30 minutes", "45 minutes", "60 minutes") else arrayOf("1 minute", "2 minutes", "5 minutes")
+        buffer_size_list.entryValues = if ((activity as CentralActivity).premium) arrayOf("60", "120", "300", "900", "1800", "2700", "3600") else arrayOf("60", "120", "300")
         buffer_size_list.setOnPreferenceChangeListener { preference, newValue ->
             if(!App.instance.canHandleBufferDuration((newValue as String).toInt())) {
                 alert("Buffer resize failed. Try freeing some space or using a smaller buffer size.") { positiveButton("Close") {} }.show()
@@ -104,12 +114,13 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
         premium.setOnPreferenceClickListener {
             alert("By purchasing the premium add-on you will be able to record up to 1 hour of audio", "Go Premium"){
                 positiveButton("Buy") {
-                    (activity as CentralActivity).startPurchase()
+                    (activity as CentralActivity).premiumer.purchase(activity)
                 }
                 negativeButton("Not now") { }
             }.show()
             false
         }
+        premium.isEnabled = !(activity as CentralActivity).premium
 
         val mic_busted = findPreference("micBusted")
         mic_busted.setOnPreferenceClickListener {
@@ -135,7 +146,7 @@ class SettingsFragment : PreferenceFragmentCompat(), SharedPreferences.OnSharedP
             val appPackageName = context!!.packageName // getPackageName() from Context or Activity object
             try {
                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)))
-            } catch (anfe: android.content.ActivityNotFoundException) {
+            } catch (anfe: Exception) {
                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)))
             }
 

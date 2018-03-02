@@ -19,8 +19,6 @@
 
     <ListPreference
         android:defaultValue="120"
-        android:entries="@array/buffer_durations_alias"
-        android:entryValues="@array/buffer_durations_actual"
         android:key="seconds_desired"
         android:title="@string/minutes_desired_label"/>
 

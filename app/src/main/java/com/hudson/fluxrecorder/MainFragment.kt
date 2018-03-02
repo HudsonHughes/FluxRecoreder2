@@ -88,21 +88,21 @@ class MainFragment : Fragment() {
                 val newestToOldest = App.instance.folder.listFiles().sortedByDescending { file -> file.name }
                 var mapPointers: MutableMap<File, Long> = mutableMapOf<File, Long>()
                 for (f: File in newestToOldest) {
-                    Log.d("Hudson", "left to process ${leftToProcess}")
+
                     if (cancel) return@doAsync
                     if (leftToProcess - f.length() > -1) {
                         mapPointers.put(f, 0L)
                         leftToProcess -= f.length()
                         processed += f.length()
-                        Log.d("Hudson", "Processed ${f.name} ${0L}")
+
                     } else {
                         mapPointers.put(f, f.length() - leftToProcess)
                         processed += f.length() - leftToProcess
-                        Log.d("Hudson", "Processed ${f.name} ${f.length() + (leftToProcess - f.length())}")
+
                         break
                     }
                 }
-                Log.d("Hudson", "Map to process" + mapPointers.toString())
+
                 var processedBytes = 0
                 var progress = 0
                 var previousProgress = 0
@@ -111,7 +111,7 @@ class MainFragment : Fragment() {
                     if (mapPointers.containsKey(f)) {
                         val location = mapPointers[f]
                         if (location != null) {
-                            Log.d("Hudson", "Processing ${f.name} starting at ${location}")
+
                             var pointer = RandomAccessFile(f, "r")
                             pointer.skipBytes(location.toInt())
                             var barray = ByteArray(1024)
@@ -200,7 +200,7 @@ class MainFragment : Fragment() {
                 rootView.saveTextView.text = getString(R.string.how_much)
             }
 
-            Log.d("Hudson", "Cycle")
+
 
         }
     }

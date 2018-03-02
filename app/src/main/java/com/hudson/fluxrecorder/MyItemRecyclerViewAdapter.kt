@@ -48,7 +48,7 @@ class MyItemRecyclerViewAdapter(private val activity : AppCompatActivity, privat
             val uri = Uri.fromFile(mValues[position].file)
             val mmr = MediaMetadataRetriever()
 
-            Log.d("Hudson", uri.toString())
+
             mmr.setDataSource(activity, uri)
             val durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
             val millSecond = Integer.parseInt(durationStr)
@@ -67,7 +67,7 @@ class MyItemRecyclerViewAdapter(private val activity : AppCompatActivity, privat
     }
 
     override fun getItemCount(): Int {
-        Log.d("Hudson", "mValues is ${mValues.size} long")
+
         return mValues.size
     }
 
@@ -95,7 +95,7 @@ class MyItemRecyclerViewAdapter(private val activity : AppCompatActivity, privat
                 file.delete()
                 MediaScannerConnection.scanFile(activity, arrayOf(file.path), null,
                     MediaScannerConnection.OnScanCompletedListener { path, uri ->
-                        Log.d("Hudson", "scanned ${path}")
+
                         EventBus.getDefault().post(PlaylistFragment.RefreshRecyclerView());
 
                     })

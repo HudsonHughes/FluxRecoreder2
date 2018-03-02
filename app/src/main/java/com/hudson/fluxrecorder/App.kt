@@ -14,11 +14,8 @@ import android.os.Environment
 import android.support.v4.app.NotificationCompat
 import android.util.Log
 import org.jetbrains.anko.defaultSharedPreferences
-import org.solovyev.android.checkout.Billing
 import java.io.*
 import kotlin.system.measureTimeMillis
-import javax.annotation.Nonnull
-
 
 
 
@@ -27,16 +24,6 @@ import javax.annotation.Nonnull
  */
 class App : Application() {
 
-    private val mBilling = Billing(this, object : Billing.DefaultConfiguration() {
-        override fun getPublicKey(): String {
-            // encrypted public key of the app. Plain version can be found in Google Play's Developer
-            // Console in Service & APIs section under "YOUR LICENSE KEY FOR THIS APPLICATION" title.
-            // A naive encryption algorithm is used to "protect" the key. See more about key protection
-            // here: https://developer.android.com/google/play/billing/billing_best_practices.html#key
-            val s = ""
-            return Encryption.decrypt(s, "96hudson@gmail.com")
-        }
-    })
 
     lateinit var folder : File
     override fun onCreate() {
@@ -95,7 +82,7 @@ class App : Application() {
             file = folder.resolve("${System.currentTimeMillis() / 1000}.raw")
             file.appendBytes(bytes)
             while(folder.listFiles().size > (secondsDesired / 30) + 1) {
-                Log.d("Hudson", "Deleted ${oldestBufferFile.name}")
+
                 oldestBufferFile.delete()
             }
         }else{
@@ -108,7 +95,7 @@ class App : Application() {
         var result = 0L
         for (element in folder.listFiles()) result += element.length()
         totalBufferSize = result
-        Log.d("Hudson", "refreshed size " + totalBufferSize.toString())
+
         return result
     }
 
@@ -142,7 +129,7 @@ class App : Application() {
                 if (result == -1L){
                     val du : Process = Runtime.getRuntime().exec("/system/bin/du " + instance.folder.canonicalFile, arrayOf<String>(), Environment.getRootDirectory())
                     val br = BufferedReader(InputStreamReader(du.inputStream)).readLine()
-                    Log.d("Hudson", br)
+
                     result = br.split("\t")[0].toLong()
                     totalBufferSize = result
                 }
@@ -158,7 +145,7 @@ class App : Application() {
             }
         var bufferDuration : Int = 0
             get() {
-                Log.d("Hudson", "Buffer Size " + instance.refreshBufferSize().toString() + " bytesPerSecond " + bytesPerSecond)
+
                 return instance.refreshBufferSize().toInt() / bytesPerSecond
             }
             private set
@@ -268,10 +255,10 @@ class App : Application() {
             val manager = instance.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
             for (service in manager.getRunningServices(Integer.MAX_VALUE))
                 if (RecordingService::class.java.canonicalName == service.service.className){
-                    Log.d("Hudson", "Service is running")
+
                     return true
                 }
-            Log.d("Hudson", "Service is not running")
+
             return false
         }
         fun startService() : Boolean {
@@ -306,10 +293,6 @@ class App : Application() {
             if ( isServiceRunning() )
                 return stopService()
             return startService()
-        }
-
-        fun getBilling(): Billing {
-            return instance.mBilling
         }
 
         fun resizeBuffer(new_seconds_desired : Int) : Boolean {

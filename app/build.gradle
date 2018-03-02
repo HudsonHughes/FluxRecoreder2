@@ -26,8 +26,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:support-v4:+'
     implementation 'com.android.support:recyclerview-v7:+'
-    compile 'com.android.billingclient:billing:1.0'
-    compile 'org.solovyev.android:checkout:1.2.1'
+    compile 'com.github.tslamic:premiumer2:1.0'
     compile "org.jetbrains.anko:anko:+"
     compile 'org.greenrobot:eventbus:+'
     compile "org.jetbrains.anko:anko-constraint-layout:+"

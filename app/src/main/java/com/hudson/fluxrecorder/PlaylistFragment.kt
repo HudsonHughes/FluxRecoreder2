@@ -116,7 +116,7 @@ class PlaylistFragment : Fragment() {
 
         File(App.storagePath).listFiles().map {
             if(it.extension == "wav"){
-                Log.d("Hudson", it.path)
+
                 val intent2 = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
                 intent2.data = Uri.fromFile(it)
                 context?.sendBroadcast(intent2)
@@ -132,13 +132,13 @@ class PlaylistFragment : Fragment() {
         var cursor: Cursor? = null
         try {
             val uri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-            Log.d("Hudson", App.storagePath)
+
             cursor = activity!!.contentResolver.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, projection,MediaStore.Audio.Media.DATA + " like ? ",
                     arrayOf<String>("%RetroactiveRecorder%"),  null);
             if (cursor != null) {
                 cursor!!.moveToFirst()
                 while (!cursor!!.isAfterLast()) {
-                    Log.d("Hudson", "Found: ${cursor!!.getString(2)}")
+
                     if(File(cursor!!.getString(2)).exists())
                         songFiles.add(Song(File(cursor!!.getString(2)), cursor!!.getLong(4)))
                     else{
@@ -150,7 +150,7 @@ class PlaylistFragment : Fragment() {
             }
 
         } catch (e: Exception) {
-            Log.e("Hudson Hughes", e.toString())
+            Log.e("Hudson", e.toString())
         } finally {
             if (cursor != null) {
                 cursor!!.close()
@@ -159,7 +159,7 @@ class PlaylistFragment : Fragment() {
 
 //        File(App.storagePath).list().filter { it.endsWith(".wav", true) }
         for(i in songFiles){
-            Log.d("Hudson", i.file.path + " " + i.duration)
+
         }
         songFiles.sortBy { -it.file.lastModified() }
         return songFiles;
