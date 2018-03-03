@@ -15,7 +15,7 @@ import io.github.tslamic.prem.*
 
 class CentralActivity : AppCompatActivity(), PremiumerListener {
 
-    val SKU = "EXTRA_STORAGE_SPACE"
+    val SKU = "extra_storage_space"
     var premium = false
     lateinit var  premiumer : Premiumer
     var currentFragmentIndex : Int = -1
@@ -114,7 +114,6 @@ class CentralActivity : AppCompatActivity(), PremiumerListener {
             title="Purchase successful"
             message="You can now record for up to than an hour."
         }
-
     }
 
     /**
@@ -198,7 +197,7 @@ class CentralActivity : AppCompatActivity(), PremiumerListener {
         setContentView(R.layout.activity_central)
 
         premiumer = PremiumerBuilder.with(this)
-                .sku("android.test.purchased")
+                .sku(SKU)
                 .listener(this)
                 .build()
         premiumer.skuDetails()
